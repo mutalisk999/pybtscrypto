@@ -1,0 +1,3 @@
+[submodule "pywrapper-dependence"]
+	path = pywrapper-dependence
+	url = https://github.com/mutalisk999/pywrapper-dependence
