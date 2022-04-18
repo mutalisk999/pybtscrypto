@@ -21,7 +21,7 @@ static secp256k1_context_t* secp256k1_get_context() {
     return g_secp256k1_ctx;
 }
 
-//»ñÈ¡¹«Ô¿
+//è·å–å…¬é’¥
 static void secp256k1_get_public_key(const unsigned char* priv_key, int priv_key_len, int compressed, unsigned char* pub_key, int* pub_key_len_ptr) {
  	DEBUG_ASSERT(priv_key != NULL);
  	DEBUG_ASSERT(pub_key != NULL);
@@ -46,27 +46,6 @@ static PyObject* secp256k1_get_public_key_wrapper(PyObject *self, PyObject *args
 	return resultObject;
 }
 
-//ECDH »ñÈ¡Ğ­ÉÌÃÜÔ¿
-static void secp256k1_get_tweak_public_key(const unsigned char* priv_key, int priv_key_len, unsigned char* pub_key, int pub_key_len) {
-	DEBUG_ASSERT(priv_key != NULL);
-	DEBUG_ASSERT(pub_key != NULL);
-	DEBUG_ASSERT(priv_key_len == 32);
-	DEBUG_ASSERT(pub_key_len == 33);
-	DEBUG_ASSERT(secp256k1_ec_pubkey_tweak_mul(secp256k1_get_context(), pub_key, pub_key_len, (const unsigned char*)priv_key) != 0);
-}
-
-static PyObject* secp256k1_get_tweak_public_key_wrapper(PyObject *self, PyObject *args) {
-	char* priv_key;
-	int priv_key_len;
-	char* pub_key;
-	int pub_key_len;
-		
-	PyArg_ParseTuple(args, "s#s#" , &priv_key, &priv_key_len, &pub_key, &pub_key_len);
-	secp256k1_get_tweak_public_key((const unsigned char*)priv_key, priv_key_len, (unsigned char*)pub_key, pub_key_len);
-	PyObject* resultObject = Py_BuildValue("s#", pub_key, pub_key_len);
-	return resultObject;
-}
-
 static int extended_nonce_function(unsigned char *nonce32, const unsigned char *msg32, const unsigned char *key32, unsigned int attempt, const void *data) {
     unsigned int* extra = (unsigned int*) data;
     (*extra)++;
@@ -80,7 +59,7 @@ static bool is_canonical(unsigned char* c) {
 		&& !(c[33] == 0 && !(c[34] & 0x80));
 }
 
-//¶Ô32¸ö×Ö½ÚµÄÊı¾İÁ÷×öÑ¹ËõÇ©Ãû
+//å¯¹32ä¸ªå­—èŠ‚çš„æ•°æ®æµåšå‹ç¼©ç­¾å
 static int secp256k1_sign_compact(const unsigned char* priv_key, int priv_key_len, const unsigned char* origin_data, int origin_data_len, 
 		unsigned char* signed_data, int* signed_data_len_ptr) {
 	DEBUG_ASSERT(priv_key != NULL);
@@ -118,7 +97,7 @@ static PyObject* secp256k1_sign_compact_wrapper(PyObject *self, PyObject *args) 
 	return resultObject;
 }
 
-//¶Ô32¸ö×Ö½ÚµÄÊı¾İÁ÷ÒÔ¼°Ñ¹ËõÇ©ÃûÍÆËãÑ¹Ëõ¹«Ô¿
+//å¯¹32ä¸ªå­—èŠ‚çš„æ•°æ®æµä»¥åŠå‹ç¼©ç­¾åæ¨ç®—å‹ç¼©å…¬é’¥
 static int secp256k1_get_pubkey_compact(const unsigned char* origin_data, int origin_data_len, const unsigned char* signed_data, int signed_data_len,
 		unsigned char* pub_key, int* pub_key_len_ptr) {
 	DEBUG_ASSERT(origin_data != NULL);
@@ -153,7 +132,7 @@ static PyObject* secp256k1_get_pubkey_compact_wrapper(PyObject *self, PyObject *
 	return resultObject;
 }
 
-//fc¿âµÄcityhash
+//fcåº“çš„cityhash
 static PyObject* cityhash128_crc_wrapper(PyObject *self, PyObject *args) {
 	char* plain_text;
 	int plain_text_len;
@@ -192,7 +171,6 @@ static PyObject* cityhash128_crc_wrapper(PyObject *self, PyObject *args) {
 
 static PyMethodDef crypto_methods[] = {
 	{"secp256k1_get_public_key" , secp256k1_get_public_key_wrapper, METH_VARARGS, "secp256k1_get_public_key(priv_key, compressed)"},
-	{"secp256k1_get_tweak_public_key", secp256k1_get_tweak_public_key_wrapper, METH_VARARGS, "secp256k1_get_tweak_public_key(priv_key, pub_key)"},
 	{"secp256k1_sign_compact", secp256k1_sign_compact_wrapper, METH_VARARGS, "secp256k1_sign_compact(priv_key, origin_data)"},
 	{"secp256k1_get_pubkey_compact", secp256k1_get_pubkey_compact_wrapper, METH_VARARGS, "secp256k1_get_pubkey_compact(origin_data, signed_data)"},
 	{"cityhash128_crc", cityhash128_crc_wrapper, METH_VARARGS, "cityhash128_crc(plain_text)"},
